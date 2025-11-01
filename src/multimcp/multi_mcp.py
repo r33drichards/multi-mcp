@@ -67,24 +67,45 @@ class MultiMCP:
         expanded_path = os.path.expanduser(path)
         print(f"[DEBUG] After expanduser: {expanded_path}")
 
-        # For relative paths, resolve relative to PWD (original invocation directory)
-        # instead of current working directory, which may differ (e.g., with nix run)
-        if not os.path.isabs(expanded_path):
-            # Use PWD environment variable if available (preserves original directory)
-            # Fall back to getcwd() if PWD not set
-            base_dir = os.environ.get('PWD', os.getcwd())
-            abs_path = os.path.join(base_dir, expanded_path)
-            print(f"[DEBUG] Relative path detected, using base_dir: {base_dir}")
-        else:
-            abs_path = expanded_path
+        # Build list of paths to try
+        paths_to_try = []
+
+        if os.path.isabs(expanded_path):
+            # Absolute path - use as-is
+            paths_to_try.append(expanded_path)
             print(f"[DEBUG] Absolute path detected")
+        else:
+            # Relative path - try multiple locations
+            print(f"[DEBUG] Relative path detected")
 
-        print(f"[DEBUG] Final resolved path: {abs_path}")
-        print(f"[DEBUG] Path exists: {os.path.exists(abs_path)}")
+            # 1. Try relative to current working directory
+            paths_to_try.append(os.path.join(os.getcwd(), expanded_path))
 
-        if not os.path.exists(abs_path):
-            print(f"Error: {abs_path} does not exist.")
-            print(f"Looked in: {os.environ.get('PWD', os.getcwd())}")
+            # 2. If we're in a Nix store (common with nix run), also try home directory
+            if os.getcwd().startswith('/nix/store'):
+                home_path = os.path.join(os.path.expanduser('~'), expanded_path)
+                if home_path not in paths_to_try:
+                    paths_to_try.append(home_path)
+
+                # 3. Also try ~/.config/multi-mcp/ for standard config location
+                config_dir_path = os.path.join(os.path.expanduser('~'), '.config', 'multi-mcp', os.path.basename(expanded_path))
+                if config_dir_path not in paths_to_try:
+                    paths_to_try.append(config_dir_path)
+
+        # Try each path until we find one that exists
+        print(f"[DEBUG] Trying paths: {paths_to_try}")
+        for abs_path in paths_to_try:
+            if os.path.exists(abs_path):
+                print(f"[DEBUG] Found config at: {abs_path}")
+                break
+        else:
+            # No path worked
+            print(f"Error: Config file not found.")
+            print(f"Tried the following locations:")
+            for p in paths_to_try:
+                print(f"  - {p}")
+            print(f"\nHint: When using 'nix run', use an absolute path:")
+            print(f"  nix run ... -- --config ~/mcp.json")
             return None
 
         with open(abs_path, "r", encoding="utf-8") as file:
