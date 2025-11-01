@@ -58,11 +58,16 @@ class MultiMCP:
 
     def load_mcp_config(self,path="./mcp.json"):
         """Loads MCP JSON configuration From File."""
-        if not os.path.exists(path):
-            print(f"Error: {path} does not exist.")
+        # Resolve to absolute path to handle relative paths correctly
+        # when program is executed from different working directories
+        abs_path = os.path.abspath(os.path.expanduser(path))
+
+        if not os.path.exists(abs_path):
+            print(f"Error: {abs_path} does not exist.")
+            print(f"Current working directory: {os.getcwd()}")
             return None
 
-        with open(path, "r", encoding="utf-8") as file:
+        with open(abs_path, "r", encoding="utf-8") as file:
             try:
                 data = json.load(file)
                 return data
