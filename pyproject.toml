@@ -3,6 +3,33 @@ name = "multi-mcp"
 version = "0.1.0"
 description = "MCP proxy project with multi-client support"
 requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.4.1",
+    "langchain-mcp-adapters>=0.0.5",
+    "langchain-core>=0.3.49",
+    "langchain-openai>=0.3.11",
+    "langgraph>=0.3.21",
+    "langgraph-checkpoint>=2.0.23",
+    "langgraph-prebuilt>=0.1.7",
+    "langgraph-sdk>=0.1.60",
+    "langsmith>=0.3.19",
+    "openai>=1.69.0",
+    "pydantic>=2.11.1",
+    "pydantic-settings>=2.8.1",
+    "rich>=13.9.4",
+    "starlette>=0.46.1",
+    "sse-starlette>=2.2.1",
+    "uvicorn>=0.34.0",
+    "httpx>=0.28.1",
+    "httpx-sse>=0.4.0",
+    "python-dotenv>=1.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
