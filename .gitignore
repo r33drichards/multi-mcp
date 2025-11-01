@@ -32,3 +32,6 @@ coverage.xml
 msc/**
 result*
 result/**
+
+# Worktrees directory
+.worktrees/
