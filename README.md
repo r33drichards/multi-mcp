@@ -135,6 +135,42 @@ make docker-build
 make docker-run
 ```
 
+## ❄️ NixOS Module
+
+Multi-MCP can be deployed as a NixOS service using the provided flake module. This allows you to configure MCP servers declaratively in your NixOS configuration.
+
+### Quick Start
+
+Add multi-mcp to your system flake:
+
+```nix
+{
+  inputs.multi-mcp.url = "github:r33drichards/multi-mcp";
+
+  outputs = { nixpkgs, multi-mcp, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      modules = [
+        multi-mcp.nixosModules.default
+        {
+          services.multi-mcp = {
+            enable = true;
+            transport = "sse";
+            servers = {
+              github = {
+                command = "npx";
+                args = [ "-y" "@modelcontextprotocol/server-github" ];
+              };
+            };
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+See [examples/nixos/](./examples/nixos/) for detailed configuration examples and documentation.
+
 ## Kubernetes
 
 You can deploy the proxy in a Kubernetes cluster using the provided manifests.
