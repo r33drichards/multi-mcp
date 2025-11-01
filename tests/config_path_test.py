@@ -125,3 +125,63 @@ def test_config_path_with_tilde_expansion():
         result = multi_mcp.load_mcp_config(str(config_path))
 
         assert result is not None
+
+
+def test_config_path_with_pwd_environment_variable():
+    """
+    Test that PWD environment variable is used for resolving relative paths.
+
+    This simulates the nix run scenario where:
+    1. User is in /home/user with mcp.json
+    2. User runs: nix run ... -- --config mcp.json
+    3. Program's cwd is changed to /nix/store/...
+    4. PWD still points to /home/user
+    5. Config should be found using PWD
+    """
+    original_cwd = os.getcwd()
+    original_pwd = os.environ.get('PWD')
+
+    try:
+        # Create temp directory to simulate user's original location
+        with tempfile.TemporaryDirectory() as user_dir:
+            # Create config file in user directory
+            config_path = Path(user_dir) / "mcp.json"
+            config_data = {
+                "mcpServers": {
+                    "test_server": {
+                        "command": "echo",
+                        "args": ["test"]
+                    }
+                }
+            }
+
+            with open(config_path, 'w') as f:
+                json.dump(config_data, f)
+
+            # Set PWD to user directory (simulates shell's PWD)
+            os.environ['PWD'] = user_dir
+
+            # Create temp directory to simulate nix store
+            with tempfile.TemporaryDirectory() as nix_store_dir:
+                # Change cwd to nix store (simulates nix run behavior)
+                os.chdir(nix_store_dir)
+
+                # Verify we're in different directory than PWD
+                assert os.getcwd() != os.environ['PWD']
+
+                # Try to load config with relative path
+                # Should use PWD instead of cwd
+                multi_mcp = MultiMCP(config="mcp.json")
+                result = multi_mcp.load_mcp_config("mcp.json")
+
+                assert result is not None, "Config should be loaded using PWD"
+                assert "mcpServers" in result
+                assert "test_server" in result["mcpServers"]
+
+    finally:
+        # Restore original state
+        os.chdir(original_cwd)
+        if original_pwd is not None:
+            os.environ['PWD'] = original_pwd
+        elif 'PWD' in os.environ:
+            del os.environ['PWD']

@@ -58,13 +58,33 @@ class MultiMCP:
 
     def load_mcp_config(self,path="./mcp.json"):
         """Loads MCP JSON configuration From File."""
-        # Resolve to absolute path to handle relative paths correctly
-        # when program is executed from different working directories
-        abs_path = os.path.abspath(os.path.expanduser(path))
+        # Debug output
+        print(f"[DEBUG] Original config path: {path}")
+        print(f"[DEBUG] PWD env var: {os.environ.get('PWD', 'NOT SET')}")
+        print(f"[DEBUG] Current working directory (getcwd): {os.getcwd()}")
+
+        # Expand ~ to user home directory
+        expanded_path = os.path.expanduser(path)
+        print(f"[DEBUG] After expanduser: {expanded_path}")
+
+        # For relative paths, resolve relative to PWD (original invocation directory)
+        # instead of current working directory, which may differ (e.g., with nix run)
+        if not os.path.isabs(expanded_path):
+            # Use PWD environment variable if available (preserves original directory)
+            # Fall back to getcwd() if PWD not set
+            base_dir = os.environ.get('PWD', os.getcwd())
+            abs_path = os.path.join(base_dir, expanded_path)
+            print(f"[DEBUG] Relative path detected, using base_dir: {base_dir}")
+        else:
+            abs_path = expanded_path
+            print(f"[DEBUG] Absolute path detected")
+
+        print(f"[DEBUG] Final resolved path: {abs_path}")
+        print(f"[DEBUG] Path exists: {os.path.exists(abs_path)}")
 
         if not os.path.exists(abs_path):
             print(f"Error: {abs_path} does not exist.")
-            print(f"Current working directory: {os.getcwd()}")
+            print(f"Looked in: {os.environ.get('PWD', os.getcwd())}")
             return None
 
         with open(abs_path, "r", encoding="utf-8") as file:
