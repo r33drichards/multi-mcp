@@ -156,21 +156,19 @@ To enable automated Docker builds:
      - `DOCKERHUB_TOKEN`: The access token you created
 
 3. **Trigger Builds**:
-   - **Automatic**: Push to `main` branch (builds and pushes to Docker Hub)
-   - **Automatic**: Push to other branches or PRs (builds only, doesn't push)
+   - **Automatic**: Push to `main` branch or create version tags (`v1.0.0`)
    - **Manual**: Go to Actions → "Build and Push Docker Image" → Run workflow
 
 #### Image Tags
 
-The workflow automatically creates tags based on the branch:
+The workflow automatically creates the following tags:
 
-- **On `main` branch**:
-  - `latest` - Latest build from main
-  - `sha-<commit>` - Specific commit SHA (e.g., `sha-a81d478`)
-
-- **On feature branches/PRs**:
-  - Builds are tested but **not pushed** to Docker Hub
-  - Only validates that the image builds successfully
+- `latest` - Latest build from main branch
+- `main` - Latest build from main branch
+- `v1.2.3` - Semantic version tags
+- `v1.2` - Major.minor version
+- `v1` - Major version
+- `main-<sha>` - Branch name with commit SHA
 
 #### Multi-Platform Support
 
