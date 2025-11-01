@@ -5,8 +5,11 @@ import os
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
-from langchain_mcp_adapters.client import DEFAULT_ENCODING, DEFAULT_ENCODING_ERROR_HANDLER
 from src.utils.logger import get_logger
+
+# Default encoding values (previously from langchain_mcp_adapters)
+DEFAULT_ENCODING = "utf-8"
+DEFAULT_ENCODING_ERROR_HANDLER = "replace"
 
 
 class MCPClientManager:

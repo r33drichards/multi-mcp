@@ -30,3 +30,5 @@ coverage.xml
 
 # ignore anything in msc directory recursively
 msc/**
+result*
+result/**
