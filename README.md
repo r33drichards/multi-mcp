@@ -135,6 +135,47 @@ make docker-build
 make docker-run
 ```
 
+### Docker Hub - Automated Builds
+
+The project includes a GitHub Actions workflow that automatically builds and pushes multi-platform Docker images (amd64, arm64) to Docker Hub.
+
+#### Setting Up Docker Hub Integration
+
+To enable automated Docker builds:
+
+1. **Create a Docker Hub Access Token**:
+   - Go to [Docker Hub](https://hub.docker.com/) → Account Settings → Security
+   - Click "New Access Token"
+   - Give it a descriptive name (e.g., "github-actions-multi-mcp")
+   - Copy the generated token
+
+2. **Add GitHub Secrets**:
+   - Go to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add two secrets:
+     - `DOCKERHUB_USERNAME`: Your Docker Hub username
+     - `DOCKERHUB_TOKEN`: The access token you created
+
+3. **Trigger Builds**:
+   - **Automatic**: Push to `main` branch or create version tags (`v1.0.0`)
+   - **Manual**: Go to Actions → "Build and Push Docker Image" → Run workflow
+
+#### Image Tags
+
+The workflow automatically creates the following tags:
+
+- `latest` - Latest build from main branch
+- `main` - Latest build from main branch
+- `v1.2.3` - Semantic version tags
+- `v1.2` - Major.minor version
+- `v1` - Major version
+- `main-<sha>` - Branch name with commit SHA
+
+#### Multi-Platform Support
+
+Images are built for:
+- `linux/amd64` - x86_64 architecture
+- `linux/arm64` - ARM64 architecture (Apple Silicon, AWS Graviton, etc.)
+
 ## Kubernetes
 
 You can deploy the proxy in a Kubernetes cluster using the provided manifests.
