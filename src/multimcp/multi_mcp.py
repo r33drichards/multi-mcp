@@ -58,13 +58,43 @@ class MultiMCP:
 
     def load_mcp_config(self,path="./mcp.json"):
         """Loads MCP JSON configuration From File."""
-        # Resolve to absolute path to handle relative paths correctly
-        # when program is executed from different working directories
-        abs_path = os.path.abspath(os.path.expanduser(path))
+        # Expand ~ to user home directory
+        expanded_path = os.path.expanduser(path)
 
-        if not os.path.exists(abs_path):
-            print(f"Error: {abs_path} does not exist.")
-            print(f"Current working directory: {os.getcwd()}")
+        # Build list of paths to try
+        paths_to_try = []
+
+        if os.path.isabs(expanded_path):
+            # Absolute path - use as-is
+            paths_to_try.append(expanded_path)
+        else:
+            # Relative path - try multiple locations
+            # 1. Try relative to current working directory
+            paths_to_try.append(os.path.join(os.getcwd(), expanded_path))
+
+            # 2. If we're in a Nix store (common with nix run), also try home directory
+            if os.getcwd().startswith('/nix/store'):
+                home_path = os.path.join(os.path.expanduser('~'), expanded_path)
+                if home_path not in paths_to_try:
+                    paths_to_try.append(home_path)
+
+                # 3. Also try ~/.config/multi-mcp/ for standard config location
+                config_dir_path = os.path.join(os.path.expanduser('~'), '.config', 'multi-mcp', os.path.basename(expanded_path))
+                if config_dir_path not in paths_to_try:
+                    paths_to_try.append(config_dir_path)
+
+        # Try each path until we find one that exists
+        for abs_path in paths_to_try:
+            if os.path.exists(abs_path):
+                break
+        else:
+            # No path worked
+            print(f"Error: Config file not found.")
+            print(f"Tried the following locations:")
+            for p in paths_to_try:
+                print(f"  - {p}")
+            print(f"\nHint: When using 'nix run', use an absolute path:")
+            print(f"  nix run ... -- --config ~/mcp.json")
             return None
 
         with open(abs_path, "r", encoding="utf-8") as file:
