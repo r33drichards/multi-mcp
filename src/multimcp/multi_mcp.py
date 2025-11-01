@@ -58,14 +58,8 @@ class MultiMCP:
 
     def load_mcp_config(self,path="./mcp.json"):
         """Loads MCP JSON configuration From File."""
-        # Debug output
-        print(f"[DEBUG] Original config path: {path}")
-        print(f"[DEBUG] PWD env var: {os.environ.get('PWD', 'NOT SET')}")
-        print(f"[DEBUG] Current working directory (getcwd): {os.getcwd()}")
-
         # Expand ~ to user home directory
         expanded_path = os.path.expanduser(path)
-        print(f"[DEBUG] After expanduser: {expanded_path}")
 
         # Build list of paths to try
         paths_to_try = []
@@ -73,11 +67,8 @@ class MultiMCP:
         if os.path.isabs(expanded_path):
             # Absolute path - use as-is
             paths_to_try.append(expanded_path)
-            print(f"[DEBUG] Absolute path detected")
         else:
             # Relative path - try multiple locations
-            print(f"[DEBUG] Relative path detected")
-
             # 1. Try relative to current working directory
             paths_to_try.append(os.path.join(os.getcwd(), expanded_path))
 
@@ -93,10 +84,8 @@ class MultiMCP:
                     paths_to_try.append(config_dir_path)
 
         # Try each path until we find one that exists
-        print(f"[DEBUG] Trying paths: {paths_to_try}")
         for abs_path in paths_to_try:
             if os.path.exists(abs_path):
-                print(f"[DEBUG] Found config at: {abs_path}")
                 break
         else:
             # No path worked
