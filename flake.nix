@@ -25,7 +25,23 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, pyproject-nix, uv2nix, pyproject-build-systems }:
-    flake-utils.lib.eachDefaultSystem (system:
+    let
+      # NixOS module (system-independent)
+      nixosModule = { config, lib, pkgs, ... }: {
+        imports = [ ./nixos-module.nix ];
+        # Provide the multi-mcp package via an overlay
+        nixpkgs.overlays = lib.mkIf config.services.multi-mcp.enable [
+          (final: prev: {
+            multi-mcp = self.packages.${prev.system}.default;
+          })
+        ];
+      };
+    in
+    {
+      # NixOS module
+      nixosModules.default = nixosModule;
+      nixosModules.multi-mcp = nixosModule;
+    } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         python = pkgs.python312;
